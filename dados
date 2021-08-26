@@ -1,0 +1,40 @@
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+Mascaramento
+# /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+# /sbin/iptables -A FORWARD -i eth0 -o eth1 -m state
+   --state RELATED,ESTABLISHED -j ACCEPT
+# /sbin/iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT
+
+ You should now be NATing. You can test this by pinging an external address from one of your internal hosts. The last step is to ensure that this setup
+ survives over a reboot. Obviously you should only do these last two steps if your test is a success.
+
+You will need to edit 
+/etc/sysctl.conf
+and change the line that says 
+net.ipv4.ip_forward = 0 to net.ipv4.ip_forward = 1. 
+Notice how this is similar to step 
+number one? This essentially tells your kernel to do step one on boot. 
+
+sudo ip addr add 192.168.XX.X dev eth1
+
+auto enp0s31f6
+iface enp0s31f6 inet static
+  address 192.168.0.3/24
+  broadcast 192.168.0.255
+  network 192.168.0.0
+  gateway 192.168.0.1
+  
+  subnet 192.168.1.0 netmask 255.255.255.0 {
+        option routers                  192.168.1.254;
+        option subnet-mask              255.255.255.0;
+
+        option domain-name              "example.com";
+        option domain-name-servers       192.168.1.1;
+
+        option time-offset              -18000;     # Eastern Standard Time
+
+	range 192.168.1.10 192.168.1.100;
+}
+
+https://web.mit.edu/rhel-doc/3/rhel-sag-pt_br-3/s1-dhcp-configuring-server.html
